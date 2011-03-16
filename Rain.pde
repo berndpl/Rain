@@ -1,83 +1,90 @@
-import ddf.minim.*;
+import ddf.minim.*;  
 
 Minim minim;
 AudioSample beep;
 AudioInput input;
+float audioLevel = 0;  
+int audioGain = 50;
+float audioThreshhold = 0;
 
-PFont font;
+PFont font;  
+PShape dropShape;                  
 
-Drop[] drops = new Drop[5];
+int bpm = 60; 
+int tapBpm = 0;
+            
+ArrayList drops;
+Cloud[] clouds = new Cloud[3];  
 
-int cloudwidth = 100;
-int tap;
-int taptemp = 0;
-int tapx;
-int tapy;
-int bpm = 500;
-
-float gain = 500;
-float inputgained;
-float in = 0;
-
-void setup() {
+void setup() { 
   size(800,600,P3D);
   frameRate(30);
-  font = createFont("Arial Bold",48);
-  textFont(font,24);
-  minim = new Minim(this);
-  beep = minim.loadSample("tick.wav");
-  input = minim.getLineIn(Minim.STEREO, 512);  
-  for (int i = 0; i < drops.length; i++){
-    int s = int(random(1,10));
-    drops[i] = new Drop(cloudwidth, s);
-  }
+  //Font
+	font = createFont("Arial",48);
+  textFont(font,12);
+	//Sound
+	minim = new Minim(this);
+  /*beep = minim.loadSample("tick.wav");*/
+  input = minim.getLineIn(Minim.STEREO, 512);
+	//Objects
+	drops = new ArrayList();
+	clouds[0] = new Cloud(); 
+	dropShape = loadShape("drop_white.svg"); 
+	dropShape.scale(0.04);
 }
-
 
 void draw() {
-  background(255);
-  
-  fill(200);
-  text("FPS "+int(frameRate),20,40);
-  text("BPM "+bpm,20,80);
-  in = input.mix.level ();  
-  text("Input Level: " + (float)in,10,120);   
-  inputgained = in * gain;
-  text("Gained Level: " + (float)inputgained,10,160);     
-  
-  smooth();
-  strokeWeight(1);
-  
-  for (int i = 0; i < drops.length; i++){
-    drops[i].fall();
-  }
+  background(0);                      
+  fill(255);                          
+//smooth();
+  //HUD
+  text("FPS "+int(frameRate),20,40);  
+	audioLevel = input.mix.level ();  
+  text("Level: " + (float)audioLevel,20,60);
+	audioLevel = audioLevel * audioGain;
+  text("Gained: " + (float)audioLevel,20,80); 
+  text("Gain [ü,+]: " + (int)audioGain,20,100); 
+  text("Threshhold [ä,#]: " + (int)audioThreshhold,20,120); 
+  text("BPM [j,k]: " + bpm,20,140); 
+
+	//Make clouds rain    
+	if (audioLevel > audioThreshhold) {
+	clouds[0].createDrops(int(audioLevel));
+	}
+	
+	clouds[0].rain();
+	    
 
 }
 
-
-void keyReleased(){
-  if (key == 's'){
-      for (int i = 0; i < drops.length; i++){
-      drops[i].reset();
-  }
+void keyPressed(){
+  if (key == ' '){
+		 if (tapBpm != 0){
+			println("BPM Millis "+millis());
+			println("BPM TapBpm "+tapBpm);
+			bpm = int(((millis() - tapBpm)/1000)*60);
+			tapBpm = millis();     
+			println("BPM Tap "+bpm);
+		 } else {
+			tapBpm = millis();			
+		}
   } 
-  if (key == 'd'){
-    if (taptemp == 0){
-      tapx = millis();
-      taptemp = 1;
-    } else if (taptemp == 1){
-      tapy = millis();
-      bpm = tapy - tapx;
-      taptemp = 0;
-      println("BPM: "+bpm);
-    }
-  }
-  if (key == 'k'){
-    gain=gain+10;
-    text("GAIN "+gain, width/2, height-20);
-  }
-  if (key == 'j'){
-    gain=gain-10;
-    text("GAIN "+gain, width/2, height-20);    
-  }  
+	if (key == 'j'){
+		bpm += 5;
+	}
+	if (key == 'k'){
+		bpm -= 5;
+	}
+	if (key == 'ü'){
+		audioGain += 5;
+	}
+	if (key == '+'){
+		audioGain -= 5;
+	}
+	if (key == 'ä'){
+		audioThreshhold += 0.5;
+	}                     
+ 	if (key == '#'){
+		audioThreshhold -= 0.5;
+	}                     
 }

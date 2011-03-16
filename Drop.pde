@@ -1,49 +1,50 @@
 class Drop {
-  int posx;
-  int posy;
-  int speed;
-  int cloudwidth;
+		
+    int dropSlotX;
+		int posY;    
+		int bpmDrop;
+		int speed;
+		
+		Drop (int dropSlotX) {
+    this.dropSlotX = dropSlotX;
+		this.posY = 80; //cloud (60) + margin (20)
+//		this.bpmDrop = bpm;
+		this.bpmDrop = int(random(bpm, 400)); ;
+    setSpeed(); //sets speed
+		}                      
+		
+		void fall(){
+				setSpeed();         		 			
+		  	posY +=speed;
+			//Draw
+				strokeWeight(3);
+				stroke(255);
+				point(dropSlotX,posY);
+//				shape(dropShape,dropSlotX,posY); 
+				smooth();				
+				shape(dropShape,dropSlotX-10,posY-20); 				
+								
+ 
 
-  void Init(){
-    int xmin = width/2 - cloudwidth/2;
-    int xmax = xmin + cloudwidth;
-    line(xmin, 1, xmax, 1);
-    posx = int(random(xmin, xmax));
-    posy = 0;
+		}                             
+		
+		boolean hitGround(){
+			if (posY >= height){
+				rect(this.dropSlotX-20,height-10,40,10);
+				posY = 0;
+				return true;
+			} else {
+				return false;
+			}
 
-    int msframeRate = int(frameRate);  
-
-    speed = ((height * msframeRate)/bpm)*int(random(1,3))/4;
-    println ("Speed :"+speed);  
-
-    //    speed = int(random(1,3));
-
-  }
-
-  Drop(int cloudwi, int s){
-    Init();
-    cloudwidth = cloudwi;
-  } 
-
-  void fall(){
-    if (posy > height){
-      hitground();
-      Init();
-    }
-    posy = posy + speed;
-    strokeWeight(5);
-    point(posx + inputgained, posy);
-  } 
-
-  void hitground(){
-    beep.trigger();
-    strokeWeight(5);
-    line(posx-10, posy-5, posx+10, posy-5);
-  } 
-  
-  void reset(){
-    posy = 0;
-  }
+		}		          
+		
+		void setSpeed(){
+			int getSpeed = int((height/frameRate * (bpmDrop/60))/20);
+			if (getSpeed > 0) {
+			 speed = int(getSpeed);
+			}
+		}
 
 }
 
