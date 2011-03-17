@@ -26,17 +26,27 @@ class Cloud {
 //			}
 	  }		       		
 
+	}      
+	
+	void drawCloud(int distort){
+		//Draw Cloud    
+		distort = 0;
+//		if (distort < 5) distort = 0;
+		noSmooth();            
+		noStroke();
+		/*
+		rect(distort+this.cloudStart+62,this.cloudHeight+19,39,39);
+		rect(distort+this.cloudStart+43,this.cloudHeight+7,39,39); 	
+		rect(distort+this.cloudStart+43,this.cloudHeight+28,39,39); 	
+		rect(distort+this.cloudStart+5,this.cloudHeight+28,39,39); 	
+		rect(distort+this.cloudStart+5,this.cloudHeight+0,39,39); 	
+		rect(distort+this.cloudStart+(-15),this.cloudHeight+19,39,39);
+		  */
+		shape(cloudShape,cloudStart-250,cloudHeight-365);
 	}
 	
 	void rain(){        
-		//Draw Cloud
-		noStroke();
-		rect(this.cloudStart+62,this.cloudHeight+19,39,39);
-		rect(this.cloudStart+43,this.cloudHeight+7,39,39); 	
-		rect(this.cloudStart+43,this.cloudHeight+28,39,39); 	
-		rect(this.cloudStart+5,this.cloudHeight+28,39,39); 	
-		rect(this.cloudStart+5,this.cloudHeight+0,39,39); 	
-		rect(this.cloudStart+(-15),this.cloudHeight+19,39,39);
+    drawCloud(dropsAmount);
 		//Draw Drops      
 		for (int i = 0; i < drops.size()-1; i++){
 			Drop drop = (Drop) drops.get(i);
