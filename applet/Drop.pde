@@ -7,9 +7,9 @@ class Drop {
 		int speed; 
 		String lyric;
 		
-		Drop (int dropSlotX, int dropSlotY) {
+		Drop (int dropSlotX) {
     this.dropSlotX = dropSlotX;
-		this.posY = dropSlotY + (cloudHeight/2) - 10; //cloud (60) + margin (20)
+		this.posY = 80; //cloud (60) + margin (20)
 		if (lyricSwitch == true){ 
 			this.lyric = lyrics[int(random(0,lyrics.length))];
 		} else{
@@ -25,16 +25,25 @@ class Drop {
 		}                      
 		
 		void fall(){
-				//setSpeed();         		 			
-		  	posY += speed + (posY/8) * 0.2;           
-//		  	posY += speed + (posY * (posY/500));           
+				setSpeed();         		 			
+		  	posY +=speed + posY*0.04;           
+//		  	posY +=speed;           
 		
 			//Draw
 				strokeWeight(3);
 				stroke(255);
 				shapeMode(CENTER);            
-				shape(dropShape,dropSlotX,posY); 		    		
-				text(this.lyric,dropSlotX,posY,dropSlotZ);    		
+				text(this.lyric,dropSlotX,posY,dropSlotZ);
+				smooth();		
+				shapeMode(CENTER);       
+				//translate(300,0);                          		
+				shape(dropShape,dropSlotX,posY); 		 
+				//translate(-300,0);                          		
+				println("X "+dropSlotX+"Y "+posY); 	
+
+								
+ 
+
 		}                             
 		
 		boolean hitGround(){

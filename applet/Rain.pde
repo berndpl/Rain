@@ -1,4 +1,3 @@
-import processing.opengl.*;
 import ddf.minim.*;   
 import fullscreen.*; 
 import peasy.*; 
@@ -25,14 +24,12 @@ boolean lyricSwitch = true;
 boolean hudSwitch = true; 
 
 ArrayList drops;
-Cloud[] clouds = new Cloud[1]; 
+Cloud[] clouds = new Cloud[3]; 
 String[] lyrics;
 
-int cloudWidth;
-int cloudHeight;
 
 void setup() { 
-  size(1024,600,OPENGL);
+  size(1024,600,P3D);
   frameRate(30);  
 // cam = new PeasyCam(this, 1000);
 	//Fullscreen
@@ -49,39 +46,34 @@ void setup() {
 	//Objects
 	drops = new ArrayList();
 	clouds[0] = new Cloud();             
+
 	dropShape = loadShape("drop.svg"); 
+	dropShape.scale(0.06);               
 	cloudShape = loadShape("cloud.svg"); 
-	cloudHeight = int(cloudShape.height);
-	cloudWidth = int(cloudShape.width);
-	println("shape "+cloudShape.width);             
+//	shapeMode(CENTER);            
+println("shape "+cloudShape.width);             
+//	cloudShape.scale(0.25);  
+
+
 	//Text 
   lyrics = loadStrings("lyrics.txt"); 
 }
 
 void draw() {
   background(0);                      
-  fill(255);  
-
-//println("Count "+frameCount%2);
-
-/*
-if (frameCount%2 == 0){
-	camera(width/2, height/2, width/2, width/2, height/2, 0,
-		       0.0, 1.0, 0.0);
-	} else {
-		camera(width/2+50, height/2, width/2, width/2, height/2, 0,
-			       0.0, 1.0, 0.0);		
-	}
-*/
+  fill(255); 
 
 //rotateY(mouseX);    
+ 
+
+println ("height "+ int(cloudShape.height));
 
 	pushMatrix();
-//	translate(100, 100); 
+	translate(100, 100); 
 //	rotateY(90);    
-//	stroke(1);
+	stroke(1);
 //	fill(50);
-//	box(10,10,10);     
+	box(10,10,10);     
 	popMatrix();
                      
 //smooth();
