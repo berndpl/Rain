@@ -1,9 +1,12 @@
 import processing.core.*; 
 import processing.xml.*; 
 
+import processing.opengl.*; 
 import ddf.minim.*; 
 import fullscreen.*; 
-import peasy.*; 
+import processing.opengl.*; 
+import codeanticode.glgraphics.*; 
+import deadpixel.keystone.*; 
 
 import java.applet.*; 
 import java.awt.Dimension; 
@@ -21,11 +24,19 @@ import java.util.regex.*;
 
 public class Rain extends PApplet {
 
-   
- 
- 
 
-PeasyCam cam;   
+   
+  
+//Projection
+
+
+
+   
+GLGraphicsOffScreen offscreenA; 
+GLGraphicsOffScreen offscreenB; 
+Keystone ks;
+CornerPinSurface surfaceA;
+CornerPinSurface surfaceB;
 
 Minim minim;
 AudioSample beep;
@@ -47,14 +58,25 @@ boolean lyricSwitch = true;
 boolean hudSwitch = true; 
 
 ArrayList drops;
-Cloud[] clouds = new Cloud[3]; 
+ArrayList blobs;
+Cloud[] clouds = new Cloud[1]; 
 String[] lyrics;
 
+int cloudWidth;
+int cloudHeight;
 
 public void setup() { 
-  size(1024,600,P3D);
+	//  size(1024,600,OPENGL);
+  size(1024,600,GLConstants.GLGRAPHICS); 
+	hint(DISABLE_DEPTH_TEST);
+	//Projection
+  offscreenA = new GLGraphicsOffScreen(this, width-10, height-10);
+  offscreenB = new GLGraphicsOffScreen(this, width-50, height-50);
+  ks = new Keystone(this);
+  surfaceA = ks.createCornerPinSurface(width, height, 20);
+  surfaceB = ks.createCornerPinSurface(width, height, 20);
+
   frameRate(30);  
-// cam = new PeasyCam(this, 1000);
 	//Fullscreen
   fs = new FullScreen(this);
   fs.setResolution(1024, 600);  
@@ -68,38 +90,26 @@ public void setup() {
   input = minim.getLineIn(Minim.STEREO, 512);
 	//Objects
 	drops = new ArrayList();
+	blobs = new ArrayList();
 	clouds[0] = new Cloud();             
-
 	dropShape = loadShape("drop.svg"); 
-	dropShape.scale(0.06f);               
 	cloudShape = loadShape("cloud.svg"); 
-//	shapeMode(CENTER);            
-println("shape "+cloudShape.width);             
-//	cloudShape.scale(0.25);  
-
-
+	cloudHeight = PApplet.parseInt(cloudShape.height);
+	cloudWidth = PApplet.parseInt(cloudShape.width);
+	println("shape "+cloudShape.width);             
 	//Text 
   lyrics = loadStrings("lyrics.txt"); 
 }
 
 public void draw() {
+
+  PVector mouse = surfaceA.getTransformedMouse();
+  offscreenA.beginDraw();
+
   background(0);                      
-  fill(255); 
+  fill(255);  
 
-//rotateY(mouseX);    
- 
-
-println ("height "+ PApplet.parseInt(cloudShape.height));
-
-	pushMatrix();
-	translate(100, 100); 
-//	rotateY(90);    
-	stroke(1);
-//	fill(50);
-	box(10,10,10);     
-	popMatrix();
-                     
-//smooth();
+	// convert                      
   //HUD                                            
 	audioLevel = input.mix.level () * audioGain;
 	if (hudSwitch == true){    	
@@ -113,10 +123,6 @@ println ("height "+ PApplet.parseInt(cloudShape.height));
 	  text("Rain [r]: " + rainSwitch,20,180); 
 	}
 
-//	translate(width/2, height/2);
-//	rotateY(radians(mouseX));
-
-
 	//Make clouds rain
 	if (rainSwitch == true){    
 		if (audioLevel > audioThreshhold) {
@@ -124,9 +130,22 @@ println ("height "+ PApplet.parseInt(cloudShape.height));
 		}                             
 	}
 	
-	clouds[0].rain();
-	    
+	clouds[0].rain("drops");
 
+	    
+  offscreenA.endDraw();   
+
+
+  offscreenB.beginDraw();
+  background(0);                             
+	clouds[0].rain("blobs");   
+
+  offscreenB.endDraw();   
+
+  background(0);
+
+  surfaceA.render(offscreenA.getTexture());                 
+  surfaceB.render(offscreenB.getTexture());                 
 }
 
 public void keyPressed(){
@@ -189,20 +208,62 @@ public void keyPressed(){
 	}  
 	if (key == 'x'){
 		clouds[0].createDrops(1);
-	}                     
+	}  
+  switch(key) {
+  case 'c':
+    // enter/leave calibration mode, where surfaces can be warped 
+    // & moved
+    ks.toggleCalibration();
+    break;
+
+  case 'a':
+    // loads the saved layout
+    ks.load();
+    break;
+
+  case 's':
+    // saves the layout
+    ks.save();
+    break;
+  }	                   
+}
+class Blob {                
+	int blobX;
+	int blobZ;
+	int r;
+	int speed;
+	
+	Blob (int dropSlotX, int dropSlotZ){
+		this.blobX = dropSlotX;
+		this.blobZ = dropSlotZ;
+		this.r = 10;
+	}         
+	
+	public void spread(){
+		ellipse(blobX, blobZ, r, r);
+		r += 1;      
+	}     
+	
+	public boolean fullSpread(){
+		if (r > 100){
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
 }
 class Cloud {    
 	int cloudWidth = 90;
 	int dropsAmount = 10;  
 	int cloudStart;
-	int cloudHeight;	
-  int cloudEnd;
+  int cloudEnd;  
+	int dropSlotY;	
 
 	Cloud () {		
-		this.cloudStart = width/2;
-//		println("shape "+cloudShape.width);
-    this.cloudEnd = cloudStart + cloudWidth;  
-		this.cloudHeight = 20;
+		this.cloudStart = (width/2) - (cloudWidth/2);
+    this.cloudEnd = this.cloudStart + cloudWidth;  
+		this.dropSlotY = cloudHeight + 100; 
 		//Draw Cloud
     line(cloudStart, 10, cloudEnd, 10);   
 
@@ -213,10 +274,12 @@ class Cloud {
 		//Create Drops		
 		for (int i = 0; i < this.dropsAmount; i++){                    
 			int dropSlotX = PApplet.parseInt(random(cloudStart, cloudEnd));			
-			println("dropsAmount: " + dropsAmount);
+//			println("dropsAmount: " + dropsAmount);
 //			int dropProbability = int(random(0, 100)); 
-//			if (dropProbability == 0)  {		
-			drops.add(new Drop(dropSlotX));
+//			if (dropProbability == 0)  {		       
+						println("drop.dropSlotX (Add) "+drop.dropSlotX);
+						println("drop.dropSlotX (Add) "+drop.dropSlotZ);
+			drops.add(new Drop(dropSlotX,dropSlotY));
 //			}
 	  }		       		
 
@@ -224,33 +287,35 @@ class Cloud {
 	
 	public void drawCloud(int distort){
 		//Draw Cloud    
-		distort = 0;
-//		if (distort < 5) distort = 0;
-		noSmooth();            
 		noStroke();
-		/*
-		rect(distort+this.cloudStart+62,this.cloudHeight+19,39,39);
-		rect(distort+this.cloudStart+43,this.cloudHeight+7,39,39); 	
-		rect(distort+this.cloudStart+43,this.cloudHeight+28,39,39); 	
-		rect(distort+this.cloudStart+5,this.cloudHeight+28,39,39); 	
-		rect(distort+this.cloudStart+5,this.cloudHeight+0,39,39); 	
-		rect(distort+this.cloudStart+(-15),this.cloudHeight+19,39,39);
-		  */       
-//		shape(cloudShape,cloudStart-250,cloudHeight-365);
 		shapeMode(CENTER);                                 
-//		translate(width/2, height/2);
-		shape(cloudShape,cloudStart,cloudHeight);
+//		shape(cloudShape,cloudStart+(cloudWidth/2),dropSlotY);
+		shape(cloudShape,cloudStart+(cloudWidth/2),dropSlotY);
 	}
 	
-	public void rain(){        
-    drawCloud(dropsAmount);
-		//Draw Drops      
-		for (int i = 0; i < drops.size()-1; i++){
-			Drop drop = (Drop) drops.get(i);
-			drop.fall();                   
-			if (drop.hitGround()){
-				drops.remove(i); 
-			}
+	public void rain(String type){        
+		if (type == "drops"){
+	    //Draw Cloud
+			drawCloud(dropsAmount);
+			//Draw Drops      
+			for (int i = 0; i < drops.size()-1; i++){
+				Drop drop = (Drop) drops.get(i);
+				drop.fall();                   
+					if (drop.hitGround()){ 
+						blobs.add(new Blob(drop.dropSlotX,drop.dropSlotZ));
+//						println("blobX "+drop.dropSlotX);
+//						println("blobY "+drop.dropSlotZ);						
+						drops.remove(i);
+					} 			
+				}                 
+		} else if (type == "blobs") {
+			for (int z = 0; z < blobs.size()-1; z++){
+				Blob blob = (Blob) blobs.get(z);
+				blob.spread(); 
+				if (blob.fullSpread()){
+					blobs.remove(z); 
+				}
+			}                           
 		}
 	}
 
@@ -264,9 +329,9 @@ class Drop {
 		int speed; 
 		String lyric;
 		
-		Drop (int dropSlotX) {
+		Drop (int dropSlotX, int dropSlotY) {
     this.dropSlotX = dropSlotX;
-		this.posY = 80; //cloud (60) + margin (20)
+		this.posY = dropSlotY + (cloudHeight/2) - 10; //cloud (60) + margin (20)
 		if (lyricSwitch == true){ 
 			this.lyric = lyrics[PApplet.parseInt(random(0,lyrics.length))];
 		} else{
@@ -278,35 +343,31 @@ class Drop {
 			this.bpmDrop = bpm;
 		}   
 		this.dropSlotZ = PApplet.parseInt(random(0,80));
+		println("dropSlotX (Create) "+dropSlotX);
+		println("dropSlotZ (Create) "+dropSlotZ);
     setSpeed(); //sets speed
 		}                      
 		
 		public void fall(){
-				setSpeed();         		 			
-		  	posY +=speed + posY*0.04f;           
-//		  	posY +=speed;           
-		
+				//setSpeed();         		 			
+		  	posY += speed + (posY/8) * 0.2f;           
+//		  	posY += speed + (posY * (posY/500));           		       
+			
 			//Draw
 				strokeWeight(3);
 				stroke(255);
 				shapeMode(CENTER);            
-				text(this.lyric,dropSlotX,posY,dropSlotZ);
-				smooth();		
-				shapeMode(CENTER);       
-				//translate(300,0);                          		
-				shape(dropShape,dropSlotX,posY); 		 
-				//translate(-300,0);                          		
-				println("X "+dropSlotX+"Y "+posY); 	
-
-								
- 
-
+				shape(dropShape,dropSlotX,posY); 		    		
+				text(this.lyric,dropSlotX,posY,dropSlotZ);    		
 		}                             
 		
 		public boolean hitGround(){
 			if (posY >= height){
 				rect(this.dropSlotX-20,height-10,40,10);
-				posY = 0;
+				posY = 0;       
+				println("blobX (HitGround)"+this.dropSlotX);
+				println("blobY (HitGround)"+this.dropSlotZ);						
+				
 				return true;
 			} else {
 				return false;

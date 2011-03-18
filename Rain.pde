@@ -1,9 +1,16 @@
 import processing.opengl.*;
 import ddf.minim.*;   
-import fullscreen.*; 
-import peasy.*; 
-
-PeasyCam cam;   
+import fullscreen.*;  
+//Projection
+import processing.opengl.*;
+import codeanticode.glgraphics.*;
+import deadpixel.keystone.*;
+   
+GLGraphicsOffScreen offscreenA; 
+GLGraphicsOffScreen offscreenB; 
+Keystone ks;
+CornerPinSurface surfaceA;
+CornerPinSurface surfaceB;
 
 Minim minim;
 AudioSample beep;
@@ -25,6 +32,7 @@ boolean lyricSwitch = true;
 boolean hudSwitch = true; 
 
 ArrayList drops;
+ArrayList blobs;
 Cloud[] clouds = new Cloud[1]; 
 String[] lyrics;
 
@@ -32,9 +40,17 @@ int cloudWidth;
 int cloudHeight;
 
 void setup() { 
-  size(1024,600,OPENGL);
+	//  size(1024,600,OPENGL);
+  size(1024,600,GLConstants.GLGRAPHICS); 
+	hint(DISABLE_DEPTH_TEST);
+	//Projection
+  offscreenA = new GLGraphicsOffScreen(this, width-10, height-10);
+  offscreenB = new GLGraphicsOffScreen(this, width-50, height-50);
+  ks = new Keystone(this);
+  surfaceA = ks.createCornerPinSurface(width, height, 20);
+  surfaceB = ks.createCornerPinSurface(width, height, 20);
+
   frameRate(30);  
-// cam = new PeasyCam(this, 1000);
 	//Fullscreen
   fs = new FullScreen(this);
   fs.setResolution(1024, 600);  
@@ -48,6 +64,7 @@ void setup() {
   input = minim.getLineIn(Minim.STEREO, 512);
 	//Objects
 	drops = new ArrayList();
+	blobs = new ArrayList();
 	clouds[0] = new Cloud();             
 	dropShape = loadShape("drop.svg"); 
 	cloudShape = loadShape("cloud.svg"); 
@@ -59,32 +76,14 @@ void setup() {
 }
 
 void draw() {
+
+  PVector mouse = surfaceA.getTransformedMouse();
+  offscreenA.beginDraw();
+
   background(0);                      
   fill(255);  
 
-//println("Count "+frameCount%2);
-
-/*
-if (frameCount%2 == 0){
-	camera(width/2, height/2, width/2, width/2, height/2, 0,
-		       0.0, 1.0, 0.0);
-	} else {
-		camera(width/2+50, height/2, width/2, width/2, height/2, 0,
-			       0.0, 1.0, 0.0);		
-	}
-*/
-
-//rotateY(mouseX);    
-
-	pushMatrix();
-//	translate(100, 100); 
-//	rotateY(90);    
-//	stroke(1);
-//	fill(50);
-//	box(10,10,10);     
-	popMatrix();
-                     
-//smooth();
+	// convert                      
   //HUD                                            
 	audioLevel = input.mix.level () * audioGain;
 	if (hudSwitch == true){    	
@@ -98,10 +97,6 @@ if (frameCount%2 == 0){
 	  text("Rain [r]: " + rainSwitch,20,180); 
 	}
 
-//	translate(width/2, height/2);
-//	rotateY(radians(mouseX));
-
-
 	//Make clouds rain
 	if (rainSwitch == true){    
 		if (audioLevel > audioThreshhold) {
@@ -109,9 +104,22 @@ if (frameCount%2 == 0){
 		}                             
 	}
 	
-	clouds[0].rain();
-	    
+	clouds[0].rain("drops");
 
+	    
+  offscreenA.endDraw();   
+
+
+  offscreenB.beginDraw();
+  background(0);                             
+	clouds[0].rain("blobs");   
+
+  offscreenB.endDraw();   
+
+  background(0);
+
+  surfaceA.render(offscreenA.getTexture());                 
+  surfaceB.render(offscreenB.getTexture());                 
 }
 
 void keyPressed(){
@@ -174,5 +182,22 @@ void keyPressed(){
 	}  
 	if (key == 'x'){
 		clouds[0].createDrops(1);
-	}                     
+	}  
+  switch(key) {
+  case 'c':
+    // enter/leave calibration mode, where surfaces can be warped 
+    // & moved
+    ks.toggleCalibration();
+    break;
+
+  case 'a':
+    // loads the saved layout
+    ks.load();
+    break;
+
+  case 's':
+    // saves the layout
+    ks.save();
+    break;
+  }	                   
 }

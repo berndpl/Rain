@@ -21,7 +21,9 @@ class Cloud {
 			int dropSlotX = int(random(cloudStart, cloudEnd));			
 //			println("dropsAmount: " + dropsAmount);
 //			int dropProbability = int(random(0, 100)); 
-//			if (dropProbability == 0)  {		
+//			if (dropProbability == 0)  {		       
+						println("drop.dropSlotX (Add) "+dropSlotX);
+						println("drop.dropSlotY (Add) "+dropSlotY);
 			drops.add(new Drop(dropSlotX,dropSlotY));
 //			}
 	  }		       		
@@ -36,16 +38,31 @@ class Cloud {
 		shape(cloudShape,cloudStart+(cloudWidth/2),dropSlotY);
 	}
 	
-	void rain(){        
-    //Draw Cloud
-		drawCloud(dropsAmount);
-		//Draw Drops      
-		for (int i = 0; i < drops.size()-1; i++){
-			Drop drop = (Drop) drops.get(i);
-			drop.fall();                   
-			if (drop.hitGround()){
-				drops.remove(i); 
-			}
+	void rain(String type){        
+		if (type == "drops"){
+	    //Draw Cloud
+			drawCloud(dropsAmount);
+			//Draw Drops      
+			for (int i = 0; i < drops.size(); i++){
+				Drop drop = (Drop) drops.get(i);
+				drop.fall();                   
+					if (drop.hitGround()){ 
+						blobs.add(new Blob(drop.dropSlotX,drop.dropSlotZ));
+						println("add blobX "+drop.dropSlotX);
+						println("add blobY "+drop.dropSlotZ);						
+						drops.remove(i);
+					} 			
+				}                 
+		} else if (type == "blobs") {
+			for (int z = 0; z < blobs.size(); z++){
+				Blob blob = (Blob) blobs.get(z);
+				blob.spread(); 
+				if (blob.fullSpread()){
+						println("blobX (Full Spread)"+blob.blobX);
+						println("blobY (Full Spread)"+blob.blobZ);							
+					blobs.remove(z); 
+				}
+			}                           
 		}
 	}
 

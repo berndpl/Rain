@@ -21,14 +21,16 @@ class Drop {
 			this.bpmDrop = bpm;
 		}   
 		this.dropSlotZ = int(random(0,80));
+		println("dropSlotX (Create) "+dropSlotX);
+		println("dropSlotZ (Create) "+dropSlotZ);
     setSpeed(); //sets speed
 		}                      
 		
 		void fall(){
 				//setSpeed();         		 			
 		  	posY += speed + (posY/8) * 0.2;           
-//		  	posY += speed + (posY * (posY/500));           
-		
+//		  	posY += speed + (posY * (posY/500));           		       
+			
 			//Draw
 				strokeWeight(3);
 				stroke(255);
@@ -39,8 +41,11 @@ class Drop {
 		
 		boolean hitGround(){
 			if (posY >= height){
-				rect(this.dropSlotX-20,height-10,40,10);
-				posY = 0;
+				//rect(this.dropSlotX-20,height-10,40,10);
+				posY = 0;       
+				println("blobX (HitGround)"+this.dropSlotX);
+				println("blobY (HitGround)"+this.dropSlotZ);						
+				
 				return true;
 			} else {
 				return false;
@@ -56,5 +61,3 @@ class Drop {
 		}
 
 }
-
-
