@@ -123,7 +123,10 @@ void draw() {
 }
 
 void keyPressed(){
-  if (key == ' '){
+	
+  switch(key) {
+
+  case ' ':
 		 if (tapBpm != 0){
 			println("BPM Millis "+millis());
 			println("BPM TapBpm "+tapBpm);
@@ -133,57 +136,67 @@ void keyPressed(){
 		 } else {
 			tapBpm = millis();			
 		}
-  } 
-	if (key == 'j'){
-		bpm += 5;
-	}
-	if (key == 'k'){
-		bpm -= 5;
-	}
-	if (key == 'ü'){
-		audioGain += 5;
-	}
-	if (key == '+'){
-		audioGain -= 5;
-	}
-	if (key == 'ä'){
-		audioThreshhold += 0.5;
-	}                     
- 	if (key == '#'){
-		audioThreshhold -= 0.5;
-	}  	
-	if (key == 'd'){
-		if (dynamicTempo == true) {
-			dynamicTempo = false;
-		} else {
-			dynamicTempo = true;
-		}
-	}  	
-	if (key == 'r'){
-		if (rainSwitch == true) {
-			rainSwitch = false;
-		} else {
-			rainSwitch = true;
-		}
-	} 	
-	if (key == 'l'){
-		if (lyricSwitch == true) {
-			lyricSwitch = false;
-		} else {
-			lyricSwitch = true;
-		}
-	}  
-	if (key == 'h'){
+    break;
+               case 'x':
+		clouds[0].createDrops(1);
+    break;
+             
+  case 'h':
 		if (hudSwitch == true) {
 			hudSwitch = false;
 		} else {
 			hudSwitch = true;
 		}
-	}  
-	if (key == 'x'){
-		clouds[0].createDrops(1);
-	}  
-  switch(key) {
+    break;
+
+  case 'l':
+		if (lyricSwitch == true) {
+			lyricSwitch = false;
+		} else {
+			lyricSwitch = true;
+		}
+    break;
+
+  case 'r':
+		if (rainSwitch == true) {
+			rainSwitch = false;
+		} else {
+			rainSwitch = true;
+		}
+    break;
+
+  case 'd':
+		if (dynamicTempo == true) {
+			dynamicTempo = false;
+		} else {
+			dynamicTempo = true;
+		}
+    break;
+
+  case 'j':
+		bpm += 5;   
+    break;
+
+  case 'k':
+		bpm -= 5;
+    break;
+
+  case 'ü':
+		audioGain += 5;
+    break;
+
+  case '+':
+		audioGain -= 5;
+    break;
+
+  case 'ä':
+		audioThreshhold += 0.5;
+    break;
+
+  case '#':
+		audioThreshhold -= 0.5;
+    break;
+
   case 'c':
     // enter/leave calibration mode, where surfaces can be warped 
     // & moved

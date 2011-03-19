@@ -11,7 +11,6 @@ class Cloud {
 		this.dropSlotY = cloudHeight + 100; 
 		//Draw Cloud
     line(cloudStart, 10, cloudEnd, 10);   
-
 	}
 
 	void createDrops(int dropsAmount){
@@ -19,13 +18,7 @@ class Cloud {
 		//Create Drops		
 		for (int i = 0; i < this.dropsAmount; i++){                    
 			int dropSlotX = int(random(cloudStart, cloudEnd));			
-//			println("dropsAmount: " + dropsAmount);
-//			int dropProbability = int(random(0, 100)); 
-//			if (dropProbability == 0)  {		       
-						println("drop.dropSlotX (Add) "+dropSlotX);
-						println("drop.dropSlotY (Add) "+dropSlotY);
 			drops.add(new Drop(dropSlotX,dropSlotY));
-//			}
 	  }		       		
 
 	}      
@@ -34,7 +27,6 @@ class Cloud {
 		//Draw Cloud    
 		noStroke();
 		shapeMode(CENTER);                                 
-//		shape(cloudShape,cloudStart+(cloudWidth/2),dropSlotY);
 		shape(cloudShape,cloudStart+(cloudWidth/2),dropSlotY);
 	}
 	
@@ -48,8 +40,6 @@ class Cloud {
 				drop.fall();                   
 					if (drop.hitGround()){ 
 						blobs.add(new Blob(drop.dropSlotX,drop.dropSlotZ));
-						println("add blobX "+drop.dropSlotX);
-						println("add blobY "+drop.dropSlotZ);						
 						drops.remove(i);
 					} 			
 				}                 
@@ -58,8 +48,6 @@ class Cloud {
 				Blob blob = (Blob) blobs.get(z);
 				blob.spread(); 
 				if (blob.fullSpread()){
-						println("blobX (Full Spread)"+blob.blobX);
-						println("blobY (Full Spread)"+blob.blobZ);							
 					blobs.remove(z); 
 				}
 			}                           
