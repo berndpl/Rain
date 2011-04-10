@@ -25,23 +25,33 @@ PShape dropShape;
 PShape cloudShape;                  
 
 int bpm = 60; 
-int tapBpm = 0; 
+int tapBpm = 0;  
+int lyricSelect = 0; 
+int marginTopHud = 0;
 boolean dynamicTempo = true;
 boolean rainSwitch = true;
 boolean lyricSwitch = true;
-boolean hudSwitch = true; 
+boolean hudSwitch = false; 
+boolean cursorSwitch = true;
 
 ArrayList drops;
 ArrayList blobs;
 Cloud[] clouds = new Cloud[1]; 
 String[] lyrics;
+String[] lyricsA;
+String[] lyricsB;
+String[] lyricsC;
+String[] lyricsD;
+String[] lyricsE;
+String[] lyricsF;
 
 int cloudWidth;
 int cloudHeight;
 
 void setup() { 
 	//  size(1024,600,OPENGL);
-  size(1024,600,GLConstants.GLGRAPHICS); 
+  /*size(1024,600,GLConstants.GLGRAPHICS); */
+  size(960,740,GLConstants.GLGRAPHICS); 
 	hint(DISABLE_DEPTH_TEST);
 	//Projection
   offscreenA = new GLGraphicsOffScreen(this, width-10, height-10);
@@ -73,6 +83,9 @@ void setup() {
 	println("shape "+cloudShape.width);             
 	//Text 
   lyrics = loadStrings("lyrics.txt"); 
+  lyricsA = loadStrings("lyrics_levelup.txt"); 
+  lyricsB = loadStrings("lyrics_somethinggood.txt"); 
+  lyricsC = loadStrings("lyrics_reallythought.txt"); 
 }
 
 void draw() {
@@ -86,15 +99,23 @@ void draw() {
 	// convert                      
   //HUD                                            
 	audioLevel = input.mix.level () * audioGain;
-	if (hudSwitch == true){    	
-	  text("FPS "+int(frameRate),20,40);  
+	if (hudSwitch == true){    	     
+		fill(100);
+	  text(" " + (float)input.mix.level(),20,marginTopHud+60);
+	  text(" " + (float)audioLevel,20,marginTopHud+80); 
+	  text(" " + (int)audioGain,20,marginTopHud+100); 
+  	text(" " + bpm,60,marginTopHud+100); 
+  	text("L " + lyricSelect,100,marginTopHud+100); 
+		fill(255);
+//	  text("D " + dynamicTempo,20,160); 
+	  /*text("FPS "+int(frameRate),20,40);  
 	  text("Level: " + (float)input.mix.level(),20,60);
 	  text("Gained: " + (float)audioLevel,20,80); 
 	  text("Gain [ü,+]: " + (int)audioGain,20,100); 
 	  text("Threshhold [ä,#]: " + (int)audioThreshhold,20,120); 
 	  text("BPM [j,k]: " + bpm,20,140); 
 	  text("Dynamic [d]: " + dynamicTempo,20,160); 
-	  text("Rain [r]: " + rainSwitch,20,180); 
+	  text("Rain [r]: " + rainSwitch,20,180); */
 	}
 
 	//Make clouds rain
@@ -122,11 +143,44 @@ void draw() {
   surfaceB.render(offscreenB.getTexture());                 
 }
 
+void selectLyric(Boolean switcher){
+	if (switcher == true){
+		lyricSelect++;
+		if (lyricSelect > 2){
+			lyricSelect = 0;
+		} 
+	}                 
+      
+	if (lyricSelect == 0){
+		lyrics = lyricsA;
+	}                  
+	
+	if (lyricSelect == 1){
+		lyrics = lyricsB;
+	}                  
+
+	if (lyricSelect == 2){
+		lyrics = lyricsC;
+	}                  
+  /*switch(lyricSelect) {
+    case '0':
+		lyrics = lyricsA;
+    break;
+    case '1':
+		lyrics = lyricsB;
+    break;
+    case '2':
+		lyrics = lyricsC;
+    break;   
+	} */
+	 
+}
+
 void keyPressed(){
 	
   switch(key) {
 
-  case ' ':
+  /*case ' ':
 		 if (tapBpm != 0){
 			println("BPM Millis "+millis());
 			println("BPM TapBpm "+tapBpm);
@@ -136,7 +190,7 @@ void keyPressed(){
 		 } else {
 			tapBpm = millis();			
 		}
-    break;
+    break; */
                case 'x':
 		clouds[0].createDrops(1);
     break;
@@ -171,7 +225,33 @@ void keyPressed(){
 		} else {
 			dynamicTempo = true;
 		}
+    break; 
+
+    case 'm':
+		if (cursorSwitch == true) {
+			cursorSwitch = false;
+			noCursor();
+		} else {
+			cursorSwitch = true;
+	    cursor(HAND);
+		}
     break;
+  
+  case '1':
+		lyrics = lyricsA; 
+    break;
+
+  case '2':
+		lyrics = lyricsB; 
+    break;
+
+  case '3':
+		lyrics = lyricsC; 
+    break;  
+
+  case '8':
+		selectLyric(true);
+    break;  
 
   case 'j':
 		bpm += 5;   

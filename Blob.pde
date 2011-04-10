@@ -18,8 +18,11 @@ class Blob {
 		if (r > 200) {
 			transparency = transparency - 30;
 		}                    
-		stroke(255,transparency*1.2);		
-		fill(255,255,255,transparency);
+//01		stroke(255,transparency*1.2);		
+//02		stroke(255,255,255,transparency);		
+//02		fill(255,255,255,transparency);
+				stroke(255,255,255,transparency);		
+		fill(0,0);
 		ellipse(blobX, blobZ, r, r);
 		r += speed;
 	}     
