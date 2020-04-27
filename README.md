@@ -1,7 +1,9 @@
 Rain
 ====
 
-[Processing] A cloud emitting drops to the sound level of the internal mic input.
+A cloud emitting drops to the sound level of the internal mic input. Built using Processing.
+
+Watch video [here](https://vimeo.com/22183786)
 
 ## Stage
 
